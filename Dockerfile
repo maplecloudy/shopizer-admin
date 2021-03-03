@@ -7,16 +7,11 @@ WORKDIR /app
 COPY . .
 
 # install angular/cli globally (latest version, change this to the version you are using)
-#RUN npm global add @angular/cli@latest
-
-# if you prefer npm, replace the above command with
-RUN npm install @angular/cli@9.1.12 -g
+#same as package.json
+RUN npm install @angular/cli@9.0.4 -g
 
 # install packages
 RUN npm install
-
-# FOR NPM
-# npm install
 
 # Build Angular Application in Production
 RUN ng build --prod
