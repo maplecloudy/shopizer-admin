@@ -7,16 +7,11 @@ WORKDIR /app
 COPY . .
 
 # install angular/cli globally (latest version, change this to the version you are using)
-RUN yarn global add @angular/cli@latest
-
-# if you prefer npm, replace the above command with
-# RUN npm install @angular/cli@latest -g
+#same as package.json
+RUN npm install @angular/cli@9.0.4 -g
 
 # install packages
-RUN yarn install
-
-# FOR NPM
-# npm install
+RUN npm install
 
 # Build Angular Application in Production
 RUN ng build --prod
