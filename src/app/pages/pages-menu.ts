@@ -19,7 +19,6 @@ const IsSuperadmin = () => {
 
 const IsAdmin = () => {
   if (
-    (JSON.parse(localStorage.getItem('roles'))).isSuperadmin ||
     (JSON.parse(localStorage.getItem('roles'))).isAdmin ||
     (JSON.parse(localStorage.getItem('roles'))).isAdminRetail
   ) {
@@ -50,14 +49,15 @@ const IsCustomer = () => {
 };
 
 const isCategoryManagementVisible = () => {
-
   if ('MARKETPLACE' === environment.mode) {
     if (IsSuperadmin()) {
       return true;
     }
-  } else {//B2C
-    if (IsAdminRetail()) {
+  } else {//Normal multi stores
+    if (IsAdminRetail() || IsAdmin()) {
       return true;
+    } else {
+      'Not admin retail'
     }
   }
 
@@ -65,8 +65,9 @@ const isCategoryManagementVisible = () => {
 
 const IsAdminRetail = () => {
   if (
-    (JSON.parse(localStorage.getItem('roles'))).isSuperadmin ||
-    (JSON.parse(localStorage.getItem('roles'))).isAdminRetail
+    JSON.parse(localStorage.getItem('roles')).isSuperadmin ||
+    JSON.parse(localStorage.getItem('roles')).isAdminRetail ||
+    JSON.parse(localStorage.getItem('roles')).isAdmin
   ) {
     return true;
   } else {
@@ -158,7 +159,7 @@ export const MENU_ITEMS: MenuItem[] = [
     key: 'COMPONENTS.CATALOUGE_MANAGEMENT',
     icon: 'pricetags',
     hidden: false,
-    guards: [IsAdminRetail],
+    guards: [IsAdminRetail, IsAdmin],
     children: [
       {
         title: 'COMPONENTS.CATEGORIES',
@@ -178,14 +179,14 @@ export const MENU_ITEMS: MenuItem[] = [
             key: 'COMPONENTS.CREATE_CATEGORY',
             link: '/pages/catalogue/categories/create-category',
             hidden: false,
-            guards: [isCategoryManagementVisible],
+            guards: [IsSuperadmin, IsAdmin, IsAdminRetail, IsAdminCatalogue],
           },
           {
             title: 'COMPONENTS.CATEGORIES_HIERARCHY',
             key: 'COMPONENTS.CATEGORIES_HIERARCHY',
             link: '/pages/catalogue/categories/categories-hierarchy',
             hidden: false,
-            guards: [isCategoryManagementVisible],
+            guards: [IsSuperadmin, IsAdmin, IsAdminRetail, IsAdminCatalogue],
           },
         ],
       },
@@ -203,13 +204,12 @@ export const MENU_ITEMS: MenuItem[] = [
             guards: [IsAdminRetail]
           },
           {
-            title: 'COMPONENTS.CREATE_PRODUCT',
-            key: 'COMPONENTS.CREATE_PRODUCT',
-            link: '/pages/catalogue/products/create-product',
+            title: 'COMPONENTS.PRODUCT_ORDERING',
+            key: 'COMPONENTS.PRODUCT_ORDERING',
+            link: '/pages/catalogue/products/product-ordering',
             hidden: false,
             guards: [IsAdminRetail]
           }
-
         ],
       },
       {
@@ -225,7 +225,6 @@ export const MENU_ITEMS: MenuItem[] = [
             hidden: false,
             guards: [IsSuperadmin, IsAdmin, IsAdminRetail, IsAdminCatalogue],
           },
-
           {
             title: 'COMPONENTS.OPTIONS_VALUES_LIST',
             key: 'COMPONENTS.OPTIONS_VALUES_LIST',
@@ -233,14 +232,20 @@ export const MENU_ITEMS: MenuItem[] = [
             hidden: false,
             guards: [IsSuperadmin, IsAdmin, IsAdminRetail, IsAdminCatalogue],
           },
-
           {
             title: 'COMPONENTS.OPTION_SET_LIST',
             key: 'COMPONENTS.OPTION_SET_LIST',
             link: '/pages/catalogue/options/options-set-list',
             hidden: false,
             guards: [IsSuperadmin, IsAdmin, IsAdminRetail, IsAdminCatalogue],
-          }
+          },
+          {
+            title: 'COMPONENTS.VARIATIONS_LIST',
+            key: 'COMPONENTS.VARIATIONS_LIST',
+            link: '/pages/catalogue/options/variations/list',
+            hidden: false,
+            guards: [IsSuperadmin, IsAdmin, IsAdminRetail, IsAdminCatalogue],
+          },
         ]
       },
       {
@@ -249,7 +254,6 @@ export const MENU_ITEMS: MenuItem[] = [
         hidden: false,
         guards: [IsSuperadmin, IsAdmin, IsAdminRetail, IsAdminCatalogue],
         children: [
-
           {
             title: 'COMPONENTS.BRANDS_LIST',
             key: 'COMPONENTS.BRANDS_LIST',
@@ -280,13 +284,13 @@ export const MENU_ITEMS: MenuItem[] = [
             hidden: false,
             guards: [IsSuperadmin, IsAdmin, IsAdminRetail, IsAdminCatalogue],
           },
-          {
-            title: 'COMPONENTS.CREATE_PRODUCTS_GROUPS',
-            key: 'COMPONENTS.CREATE_PRODUCTS_GROUPS',
-            link: '/pages/catalogue/products-groups/create-products-group',
-            hidden: false,
-            guards: [IsSuperadmin, IsAdmin, IsAdminRetail, IsAdminCatalogue],
-          }
+          // {
+          //   title: 'COMPONENTS.CREATE_PRODUCTS_GROUPS',
+          //   key: 'COMPONENTS.CREATE_PRODUCTS_GROUPS',
+          //   link: '/pages/catalogue/products-groups/create-products-group',
+          //   hidden: false,
+          //   guards: [IsSuperadmin, IsAdmin, IsAdminRetail, IsAdminCatalogue],
+          // }
         ]
       },
       {
@@ -306,7 +310,7 @@ export const MENU_ITEMS: MenuItem[] = [
         ]
       },
 
-
+      /**
       {
         title: 'COMPONENTS.CATALOGUES',
         key: 'COMPONENTS.CATALOGUES',
@@ -323,6 +327,7 @@ export const MENU_ITEMS: MenuItem[] = [
           }
         ],
       },
+      **/
 
     ]
   },
@@ -383,12 +388,14 @@ export const MENU_ITEMS: MenuItem[] = [
         title: 'SHIPPING.PACKAGING',
         key: 'SHIPPING.PACKAGING',
         link: '/pages/shipping/packaging',
-      },
+      }
+      /**
       {
         title: 'COMPONENTS.RULES',
         key: 'COMPONENTS.RULES',
         link: '/pages/shipping/rules',
       },
+      */
 
       // {
       //   title: 'Options',

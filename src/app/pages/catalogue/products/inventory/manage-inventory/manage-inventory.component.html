@@ -1,5 +1,5 @@
 <nb-card class="page-card inner_pages">
-  <nb-card-body [nbSpinner]="loadingList" nbSpinnerSize="large" nbSpinnerStatus="primary" class="product_inventory">
+  <div [nbSpinner]="loadingList" nbSpinnerSize="large" nbSpinnerStatus="primary" class="product_inventory">
     <div class="inner_pages_legacy">
       <nb-card-header class="main_header">
         <h1 class="page_title">{{product?.description.name}}</h1>
@@ -30,5 +30,5 @@
         [count]="totalCount">
       </ngx-paginator>
     </div>
-  </nb-card-body>
+  </div>
 </nb-card>

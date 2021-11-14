@@ -9,7 +9,9 @@ import { GroupsListComponent } from './groups-list/groups-list.component';
 import { ProductsGroupsCreationComponent } from './products-groups-creation/products-groups-creation.component';
 import { ProductGroupFormComponent } from './product-group-form/product-group-form.component';
 import { ActiveButtonComponent } from './groups-list/active-button.component';
+import { CustomModule } from '../../custom-component/custom.module';
 
+import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
 @NgModule({
   declarations: [
     ProductsGroupsComponent,
@@ -22,9 +24,10 @@ import { ActiveButtonComponent } from './groups-list/active-button.component';
   ],
   imports: [
     ProductsGroupsRoutingModule,
-
     SharedModule,
     NgxSummernoteModule,
+    CustomModule,
+    NgMultiSelectDropDownModule.forRoot()
   ],
   entryComponents: [ActiveButtonComponent]
 })

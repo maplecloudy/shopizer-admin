@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LocalDataSource } from 'ng2-smart-table';
 // import { TreeNode } from 'primeng/primeng';
 import { ProductAttributesService } from '../../services/product-attributes.service';
+import { AttributeFormComponent } from '../attribute-form/attribute-form.component';
 import { OptionService } from '../../../options/services/option.service';
 import { Attribute } from '../model/attribute';
 import { ToastrService } from 'ngx-toastr';
@@ -24,8 +25,9 @@ export interface TreeNode {
   styleUrls: ['./product-attributes.component.scss']
 })
 export class ProductAttributesComponent implements OnInit {
-  productId: any;
-  loader = false;
+  @Input() productId;
+  @Output() loading = new EventEmitter<any>();
+  // loader = false;
   data: TreeNode[] = [];
   source: LocalDataSource = new LocalDataSource();
   options = [];
@@ -60,14 +62,14 @@ export class ProductAttributesComponent implements OnInit {
   }
   loadParams() {
     return {
-      // store: this.storageService.getMerchant(),
-      lang: this.storageService.getLanguage(),
+      store: this.storageService.getMerchant(),
+      lang: "_all",
       count: this.perPage,
       page: 0
     };
   }
   ngOnInit() {
-    this.productId = this.activatedRoute.snapshot.paramMap.get('productId');
+    // this.productId = this.activatedRoute.snapshot.paramMap.get('productId');
     this.getList();
     this.translate.onLangChange.subscribe((lang) => {
       this.params.lang = this.storageService.getLanguage();
@@ -76,19 +78,22 @@ export class ProductAttributesComponent implements OnInit {
   }
 
   getList() {
-    this.loader = true;
+    this.loading.emit(true);
     this.productAttributesService.getListOfProductsAttributes(this.productId, this.params)
       .subscribe(res => {
         // this.isEmpty = res.attributes.length === 0;
         // const newArr = this.prepareData(res.attributes);
         // this.data = [...newArr];
-        if (res.attributes && res.attributes.length !== 0) {
-          this.source.load(res.attributes);
+        var tempArray = res.attributes.filter((value) => {
+          return value.attributeDisplayOnly === false;
+        });
+        if (tempArray.length !== 0) {
+          this.source.load(tempArray);
         } else {
           this.source.load([]);
         }
         this.totalCount = res.recordsTotal;
-        this.loader = false;
+        this.loading.emit(false);
       });
     this.setSettings();
   }
@@ -169,48 +174,19 @@ export class ProductAttributesComponent implements OnInit {
   }
 
 
-  // prepareData(basicArray) {
-  //   const parentArray = [];
-  //   // create options groups
-  //   this.options.forEach((option) => {
-  //     const parent: TreeNode = {
-  //       data: {
-  //         id: option.id,
-  //         parentName: option.code,
-  //         parent: true
-  //       },
-  //       expanded: true,
-  //       children: []
-  //     };
-  //     parentArray.push(parent);
-  //   });
-  //   // fill each group by data
-  //   parentArray.forEach((parent) => {
-  //     basicArray.forEach((attribute) => {
-  //       if (parent.data.parentName === attribute.option.code) {
-  //         parent.children.push({
-  //           data: {
-  //             ...attribute,
-  //             option: attribute.option.code,
-  //             optionValue: attribute.optionValue.code,
-  //           }
-  //         });
-  //       }
-  //     });
-  //   });
-  //   // find empty children's arrays
-  //   parentArray.forEach((parent) => {
-  //     if (parent.children.length === 0) {
-  //       parent.data.empty = true;
-  //     }
-  //   });
-  //   return parentArray;
-  // }
   route(event) {
     console.log(event)
     switch (event.action) {
       case 'edit':
-        this.router.navigate(['/pages/catalogue/products/' + this.productId + '/attribute/' + event.data.id]);
+        this.dialogService.open(AttributeFormComponent, {
+          context: {
+            productId: this.productId,
+            attributeId: event.data.id
+          }
+        }).onClose.subscribe(res => {
+          this.getList()
+        });
+        // this.router.navigate(['/pages/catalogue/products/' + this.productId + '/attribute/' + event.data.id]);
         break;
       case 'remove':
         this.removeAttribute(event.data.id);
@@ -218,17 +194,29 @@ export class ProductAttributesComponent implements OnInit {
 
     }
   }
+  onClickAdd() {
+    console.log('jaimin')
+    this.dialogService.open(AttributeFormComponent, {
+      context: {
+        productId: this.productId
+      }
+    }).onClose.subscribe(res => {
+      this.getList()
+    });
+  }
   removeAttribute(id) {
-    this.loader = true;
+    // this.loading.emit(true);
     this.dialogService.open(ShowcaseDialogComponent, {})
       .onClose.subscribe(res => {
         if (res) {
+          this.loading.emit(true);
           this.productAttributesService.deleteAttribute(this.productId, id).subscribe(res => {
             this.getList();
             this.toastr.success(this.translate.instant('PRODUCT_ATTRIBUTES.PRODUCT_ATTRIBUTES_REMOVED'));
           });
+          this.loading.emit(false);
         } else {
-          this.loader = false;
+          this.loading.emit(false);
           // event.confirm.reject();
         }
       });

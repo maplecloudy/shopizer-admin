@@ -59,7 +59,7 @@ export class StoreFormComponent implements OnInit {
   parentRetailer: any;
   merchant = '';
   parent: any;
-  selectedItem = '2';
+  selectedItem = '1';
   sidemenuLinks = [
     {
       id: '0',
@@ -69,12 +69,6 @@ export class StoreFormComponent implements OnInit {
     },
     {
       id: '1',
-      title: 'Store home page',
-      key: 'COMPONENTS.STORE_LANDING',
-      link: 'store-landing'
-    },
-    {
-      id: '2',
       title: 'Store details',
       key: 'COMPONENTS.STORE_DETAILS',
       link: 'store'
@@ -109,7 +103,9 @@ export class StoreFormComponent implements OnInit {
         this.supportedCurrency = [...currencies];
         this.weightList = [...measures.weights];
         this.sizeList = [...measures.measures];
+
         this.supportedLanguages = this.configService.getListOfGlobalLanguages();
+
         // use method for getting only retailer store
         //list of retailers
 
@@ -312,7 +308,6 @@ export class StoreFormComponent implements OnInit {
       this.countryIsSelected(this.store.address.country);
     }
     this.isReadonlyCode = true;
-    console.log('Selected retailer code ' + this.form.controls['retailerStore'].value);
     this.cdr.markForCheck();
 
   }

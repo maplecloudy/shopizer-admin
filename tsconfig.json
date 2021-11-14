@@ -1,8 +1,8 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "importHelpers": true,
-    "module": "esnext",
+    "importHelpers": false,
+    "module": "es2020",
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "declaration": false,
@@ -24,6 +24,7 @@
     ]
   },
   "angularCompilerOptions": {
-    "enableIvy": false
+    "enableIvy": false,
+    "strictTemplates": true
   }
 }

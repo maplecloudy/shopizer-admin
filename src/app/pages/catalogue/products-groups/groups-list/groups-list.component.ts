@@ -6,95 +6,114 @@ import { TranslateService } from '@ngx-translate/core';
 import { ShowcaseDialogComponent } from '../../../shared/components/showcase-dialog/showcase-dialog.component';
 import { ProductGroupsService } from '../services/product-groups.service';
 import { ActiveButtonComponent } from './active-button.component';
+import { StorageService } from '../../../shared/services/storage.service';
+import { Router } from '@angular/router';
 
 @Component({
-  selector: 'ngx-groups-list',
-  templateUrl: './groups-list.component.html',
-  styleUrls: ['./groups-list.component.scss']
+    selector: 'ngx-groups-list',
+    templateUrl: './groups-list.component.html',
+    styleUrls: ['./groups-list.component.scss']
 })
 export class GroupsListComponent implements OnInit {
-  source: LocalDataSource = new LocalDataSource();
-  loadingList = false;
+    source: LocalDataSource = new LocalDataSource();
+    loadingList = false;
+    params = this.loadParams();
+    settings = {};
 
-  settings = {};
+    constructor(
+        private dialogService: NbDialogService,
+        private translate: TranslateService,
+        private productGroupsService: ProductGroupsService,
+        private storageService: StorageService,
+        private router: Router
+    ) {
+    }
+    loadParams() {
+        return {
+            store: this.storageService.getMerchant()
+        };
+    }
+    ngOnInit() {
+        this.getList();
+    }
 
-  constructor(
-    private dialogService: NbDialogService,
-    private translate: TranslateService,
-    private productGroupsService: ProductGroupsService
-  ) {
-  }
+    getList() {
+        this.loadingList = true;
+        this.productGroupsService.getListOfProductGroups(this.params).subscribe(res => {
+            this.source.load(res);
+            this.loadingList = false;
+        });
+        this.setSettings();
+        this.translate.onLangChange.subscribe((event) => {
+            this.setSettings();
+        });
+    }
 
-  ngOnInit() {
-    this.getList();
-  }
+    setSettings() {
+        this.settings = {
+            // mode: 'inline',
+            // delete: {
+            //   deleteButtonContent: '<i class="nb-trash"></i>',
+            //   confirmDelete: true
+            // },
+            actions: {
+                columnTitle: 'Action',
+                add: false,
+                edit: false,
+                delete: false,
+                position: 'right',
+                sort: true,
+                custom: [
+                    { name: 'edit', title: '<i class="nb-edit"></i>' },
+                    { name: 'remove', title: '<i class="nb-trash"></i>' }
+                ],
+            },
+            pager: { display: false },
+            columns: {
+                code: {
+                    title: this.translate.instant('COMMON.CODE'),
+                    type: 'string',
+                    editable: false
+                },
+                active: {
+                    filter: false,
+                    title: this.translate.instant('COMMON.ACTIVE'),
+                    type: 'custom',
+                    renderComponent: ActiveButtonComponent,
+                    defaultValue: false,
+                    editable: true,
+                    editor: {
+                        type: 'checkbox'
+                    }
+                },
+            },
+        };
+    }
 
-  getList() {
-    this.loadingList = true;
-    this.productGroupsService.getListOfProductGroups().subscribe(res => {
-      this.source.load(res);
-      this.loadingList = false;
-    });
-    this.setSettings();
-    this.translate.onLangChange.subscribe((event) => {
-      this.setSettings();
-    });
-  }
-
-  setSettings() {
-    this.settings = {
-      // mode: 'inline',
-      // delete: {
-      //   deleteButtonContent: '<i class="nb-trash"></i>',
-      //   confirmDelete: true
-      // },
-      actions: {
-        columnTitle: 'Action',
-        add: false,
-        edit: false,
-        delete: false,
-        position: 'right',
-        sort: true,
-        custom: [
-          // { name: 'edit', title: '<i class="nb-edit"></i>' },
-          { name: 'remove', title: '<i class="nb-trash"></i>' }
-        ],
-      },
-      pager: { display: false },
-      columns: {
-        code: {
-          title: this.translate.instant('COMMON.CODE'),
-          type: 'string',
-          editable: false
-        },
-        active: {
-          filter: false,
-          title: this.translate.instant('COMMON.ACTIVE'),
-          type: 'custom',
-          renderComponent: ActiveButtonComponent,
-          defaultValue: false,
-          editable: true,
-          editor: {
-            type: 'checkbox'
-          }
-        },
-      },
-    };
-  }
-
-  deleteRecord(event) {
-    this.dialogService.open(ShowcaseDialogComponent, {})
-      .onClose.subscribe(res => {
-        if (res) {
-          event.confirm.resolve();
-          this.productGroupsService.removeProductGroup(event.data.id)
-            .subscribe(result => {
-              this.getList();
-            });
+    onSelectStore(e) {
+        console.log(e);
+        this.params["store"] = e;
+        this.getList();
+    }
+    deleteRecord(event) {
+        console.log(event);
+        if (event.action == "remove") {
+            this.dialogService.open(ShowcaseDialogComponent, {})
+                .onClose.subscribe(res => {
+                    if (res) {
+                        // event.confirm.resolve();
+                        this.productGroupsService.removeProductGroup(event.data.code)
+                            .subscribe(result => {
+                                this.getList();
+                            });
+                    } else {
+                        event.confirm.reject();
+                    }
+                });
         } else {
-          event.confirm.reject();
+            localStorage.setItem('groupData', JSON.stringify(event.data))
+            this.router.navigate(['/pages/catalogue/products-groups/create-products-group/' + event.data.code]);
         }
-      });
-  }
+    }
 
 }

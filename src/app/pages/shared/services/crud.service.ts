@@ -18,9 +18,21 @@ export class CrudService {
   getShipping(path, params?: { [param: string]: string | string[]; }): Observable<any> {
     return this.http.get(`${this.shippingUrl}${path}`, { responseType: 'json', params });
   }
-
+  postShipping(path, body: any | null, options?: any): Observable<any> {
+    return this.http.post(`${this.shippingUrl}${path}`, body, options);
+  }
+  deleteShipping(path, options?: any): Observable<any> {
+    return this.http.delete(`${this.shippingUrl}${path}`, options);
+  }
+  putShipping(path, body: any | null, options?: any): Observable<any> {
+    return this.http.put(`${this.shippingUrl}${path}`, body, options);
+  }
   get(path, params?: any): Observable<any> {
     return this.http.get(`${this.url}${path}`, { responseType: 'json', params });
+  }
+
+  getBaseUrl() {
+    return `${this.url}`;
   }
 
   getWithEmpty(path, params?: { [param: string]: string | string[]; }): Observable<any> {

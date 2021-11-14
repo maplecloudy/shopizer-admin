@@ -24,6 +24,7 @@
                 text-transform: uppercase;
                 font-weight: 600;
                 font-size: 0.875rem;
+                height:40px;
 
                 &:disabled {
                     background-color: #598bff96;
@@ -66,6 +67,11 @@
 :host ::ng-deep .brand_create_page {
     .nb-card-header {
         font-weight: 700;
+    }
+
+    .fullWidth {
+        width: 100%;
+        max-width: 101rem !important;
     }
 
     .inputLabel {

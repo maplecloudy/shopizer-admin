@@ -22,9 +22,19 @@ import { AttributeRoutingModule } from './routing/attribute-routing.module';
 import { ProductsRoutingModule } from './routing/products-routing.module';
 import { PriceRoutingModule } from './routing/price-routing.module';
 import { InventoryRoutingModule } from './routing/inventory-routing.module';
-import { CustomModule } from '../../custome-component/custom.module';
+import { CustomModule } from '../../custom-component/custom.module';
+import { ProductsImagesComponent } from './products-images/products-images.component';
+import { ProductProperties } from './property/list/product-property.component';
+import { ProductPropertyForm } from './property/form/product-property-form.component';
+import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
+import { NbDialogModule } from '@nebular/theme';
+import { ProductDiscountComponent } from './product-discount/product-discount.component';
+import { ProductOrderingComponent } from './product-ordering/product-ordering.component';
 
+import { DragDropModule } from '@angular/cdk/drag-drop';
 @NgModule({
+
+
   declarations: [
     ProductsComponent,
     ProductsListComponent,
@@ -44,20 +54,27 @@ import { CustomModule } from '../../custome-component/custom.module';
     PriceFormComponent,
 
     ProductAttributesComponent,
-    AttributeFormComponent
+    AttributeFormComponent,
+    ProductsImagesComponent,
+    ProductProperties,
+    ProductPropertyForm,
+    ProductDiscountComponent,
+    ProductOrderingComponent,
   ],
+  entryComponents: [AvailableButtonComponent, AttributeFormComponent, ProductPropertyForm],
   imports: [
     ProductsRoutingModule,
     InventoryRoutingModule,
     PriceRoutingModule,
     AttributeRoutingModule,
-
     SharedModule,
     CustomModule,
-    NgxSummernoteModule
+    NgxSummernoteModule,
+    NbDialogModule.forChild(),
+    NgMultiSelectDropDownModule.forRoot(),
+    DragDropModule
 
   ],
-  entryComponents: [AvailableButtonComponent]
 })
 
 export class ProductsModule {

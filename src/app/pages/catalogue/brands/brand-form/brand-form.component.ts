@@ -59,14 +59,14 @@ export class BrandFormComponent implements OnInit {
           this.fillForm();
         }
         this.loader = false;
-      });
+    });
   }
 
   createForm() {
     this.form = this.fb.group({
       code: ['', [Validators.required, Validators.pattern(validators.alphanumeric)]],
       order: ['', [Validators.required, Validators.pattern(validators.number)]],
-      selectedLanguage: ['', [Validators.required]],
+      selectedLanguage: ['en', [Validators.required]],
       descriptions: this.fb.array([]),
     });
   }
@@ -100,22 +100,31 @@ export class BrandFormComponent implements OnInit {
   }
 
   fillFormArray() {
+    console.log(this.brand.descriptions);
     this.form.value.descriptions.forEach((desc, index) => {
-      this.brand.descriptions.forEach((description) => {
-        if (desc.language === description.language) {
-          (<FormArray>this.form.get('descriptions')).at(index).patchValue({
-            language: description.language,
-            name: description.name,
-            highlights: description.highlights,
-            friendlyUrl: description.friendlyUrl,
-            description: description.description,
-            title: description.title,
-            keyWords: description.keyWords,
-            metaDescription: description.metaDescription,
-          });
-        }
-      });
+      if (this.brand != null && this.brand.descriptions) {
+        this.brand.descriptions.forEach((description) => {
+          if (desc.language === description.language) {
+            (<FormArray>this.form.get('descriptions')).at(index).patchValue({
+              language: description.language,
+              name: description.name,
+              highlights: description.highlights,
+              friendlyUrl: description.friendlyUrl,
+              description: description.description,
+              title: description.title,
+              keyWords: description.keyWords,
+              metaDescription: description.metaDescription,
+            });
+          }
+        });
+      }
     });
+  }
+  selectLanguage(lang) {
+    this.form.patchValue({
+      selectedLanguage: lang,
+    });
+    //this.fillFormArray();
   }
 
 

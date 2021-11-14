@@ -7,9 +7,9 @@ let canadapost = require('../services/canadapost.json');
 let upsData = require('../services/ups.json');
 let customRulesData = require('../services/customrules.json');
 let storePickUpData = require('../services/storepickup.json');
+let weightBased = require('../services/weightbased.json');
 import { SharedService } from '../services/shared.service';
-import { async } from 'q';
-// let braintreeData = require('../services/braintree.json');
+
 @Component({
   selector: 'ngx-shipping-configure',
   templateUrl: './configure.component.html',
@@ -46,11 +46,11 @@ export class ShippingConfigureComponent implements OnInit {
     private activatedRoute: ActivatedRoute,
     private sharedService: SharedService
   ) {
-    // this.getCountry();
-    // this.getLanguages();
+
   }
   ngOnInit() {
     let type = this.activatedRoute.snapshot.paramMap.get('id');
+    console.log(type);
     if (type == 'canadapost') {
       this.formData = canadapost;
       this.shippingType = "Canada Post";
@@ -58,16 +58,18 @@ export class ShippingConfigureComponent implements OnInit {
     else if (type == 'ups') {
       this.formData = upsData;
       this.shippingType = "UPS";
-
-
+    }
+    else if (type == 'weightBased') {
+      this.formData = weightBased;
+      this.shippingType = 'Weight Based Shipping Price'
     }
     else if (type == 'customQuotesRules') {
       this.formData = customRulesData;
-      this.shippingType = 'Shipping by Fresh Organics '
+      this.shippingType = 'Custom shipping'
     }
     else if (type == 'priceByDistance') {
       this.formData = customRulesData;
-      this.shippingType = 'Shipping by Fresh Organics'
+      this.shippingType = 'Price by distance'
     }
     else if (type == 'storePickUp') {
       this.formData = storePickUpData;
@@ -80,6 +82,7 @@ export class ShippingConfigureComponent implements OnInit {
     this.sharedService.getShippingModulesDetails(type)
       .subscribe(data => {
         console.log(data);
+        this.active = data.active;
         this.loadingList = false;
         this.shippingData = data;
         this.setConfigureData();
@@ -111,12 +114,56 @@ export class ShippingConfigureComponent implements OnInit {
     });
   }
   save() {
-    console.log(this.formData)
-    let param = {};
+    // console.log(this.formData)
+    let type = this.activatedRoute.snapshot.paramMap.get('id');
+    let param: any = {};
     this.formData.map((value) => {
-      param[value.name] = this.shippingData[value.name]
+      // console.log(value.value)
+      if (value.objectKey === "integrationOptions") {
+        if (value.type == 'radio') {
+          param[value.name] = value.value
+        } else {
+          let a = value.optionData.filter((a) => { return a.checked === true }).map(function (obj) {
+            return obj.value;
+          });
+          param[value.name] = a
+        }
+      } else {
+        param[value.name] = value.value
+      }
     });
-    console.log(param)
+    // console.log(param)
+    let body: any = {};
+    if (type == "canadapost") {
+      body = { 'code': type, 'active': param.active, 'defaultSelected': param.defaultSelected, 'integrationKeys': { 'account': param.account, 'apikey': param.apikey, 'password': param.password, 'username': param.username }, 'integrationOptions': { 'services-domestic': param['services-domestic'], 'services-intl': param['services-intl'], 'services-usa': param['services-usa'] } }
+    } else if (type == 'ups') {
+      body = { 'code': type, 'active': param.active, 'defaultSelected': param.defaultSelected, 'integrationKeys': { 'accessKey': param.accessKey, 'password': param.password, 'userId': param.userId }, 'integrationOptions': { 'packages': [param['packages']], 'selectservice': [param['selectservice']] } }
+    } else if (type == 'weightBased') {
+      body = { 'code': type, 'active': param.active, 'defaultSelected': param.defaultSelected, 'integrationKeys': {}, 'integrationOptions': {} }
+    }
+    else if (type == 'customQuotesRules') {
+      body = { 'code': type, 'active': param.active, 'defaultSelected': param.defaultSelected, 'integrationKeys': {}, 'integrationOptions': {} }
+    }
+    else if (type == 'priceByDistance') {
+      body = { 'code': type, 'active': param.active, 'defaultSelected': param.defaultSelected, 'integrationKeys': {}, 'integrationOptions': {} }
+    }
+    else if (type == 'storePickUp') {
+      body = { 'code': type, 'active': param.active, 'defaultSelected': param.defaultSelected, 'integrationKeys': { 'note': param.note, 'price': param.price }, 'integrationOptions': {} }
+    }
+    this.saveShippingData(body)
+  }
+  saveShippingData(body) {
+    console.log(body)
+    this.loadingList = true;
+    this.sharedService.saveShippingMethods(body)
+      .subscribe(data => {
+        console.log(data);
+        this.loadingList = false;
+        this.toastr.success('Shipping methods has been saved successfully.');
+      }, error => {
+        this.loadingList = false;
+        this.toastr.error('Shipping methods configured has been failed..');
+      });
   }
 
   goBack() {

@@ -17,12 +17,12 @@ import { ToastrService } from 'ngx-toastr';
   styleUrls: ['./manage-inventory.component.scss']
 })
 export class ManageInventoryComponent implements OnInit {
+
   source: LocalDataSource = new LocalDataSource();
   loadingList = false;
   stores = [];
   product;
   productId;
-
   // paginator
   perPage = 10;
   currentPage = 1;
@@ -47,6 +47,7 @@ export class ManageInventoryComponent implements OnInit {
     private storageService: StorageService,
     private toastr: ToastrService,
   ) {
+
     this.productId = this.activatedRoute.snapshot.paramMap.get('productId');
     this.productService.getProductById(this.productId).subscribe(product => {
       this.product = product;
@@ -54,6 +55,9 @@ export class ManageInventoryComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.productService.getProductById(this.productId).subscribe(product => {
+      this.product = product;
+    });
     this.getList();
     this.translate.onLangChange.subscribe((lang) => {
       this.params.lang = this.storageService.getLanguage();
@@ -68,7 +72,7 @@ export class ManageInventoryComponent implements OnInit {
     this.inventoryService.getListOfInventories(id, this.params)
       .subscribe(res => {
         this.totalCount = res.recordsTotal;
-        this.source.load(res.inventory);
+        this.source.load(res.items);
         this.loadingList = false;
       });
     this.setSettings();
@@ -76,8 +80,11 @@ export class ManageInventoryComponent implements OnInit {
 
   setSettings() {
     this.settings = {
+      mode: 'external',
+      hideSubHeader: true,
       actions: {
         columnTitle: this.translate.instant('ORDER.ACTIONS'),
+
         add: false,
         edit: false,
         delete: false,

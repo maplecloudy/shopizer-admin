@@ -27,7 +27,7 @@ export class ProductService {
     const params = {
       store: this.storageService.getMerchant()
     };
-    return this.crudService.put(`/v1/private/product/${id}`, product, { params });
+    return this.crudService.put(`/v2/private/product/definition/${id}`, product, { params });
   }
 
   getProductById(id): Observable<any> {
@@ -37,11 +37,18 @@ export class ProductService {
     return this.crudService.get(`/v1/products/${id}`, params);
   }
 
+  getProductDefinitionById(id): Observable<any> {
+    const params = {
+      lang: '_all'
+    };
+    return this.crudService.get(`/v2/private/product/definition/${id}`, params);
+  }
+
   createProduct(product): Observable<any> {
     const params = {
       store: this.storageService.getMerchant()
     };
-    return this.crudService.post(`/v1/private/product`, product, { params });
+    return this.crudService.post(`/v2/private/product/definition`, product);
   }
 
   deleteProduct(id): Observable<any> {
@@ -60,11 +67,11 @@ export class ProductService {
   }
 
   addProductToCategory(productId, categoryId): Observable<any> {
-    return this.crudService.post(`/api/v1/auth/product/${productId}/category/${categoryId}`, {});
+    return this.crudService.post(`/v1/private/product/${productId}/category/${categoryId}`, {});
   }
 
   removeProductFromCategory(productId, categoryId): Observable<any> {
-    return this.crudService.delete(`/api/v1/auth/product/${productId}/category/${categoryId}`);
+    return this.crudService.delete(`/v1/private/product/${productId}/category/${categoryId}`);
   }
 
 }

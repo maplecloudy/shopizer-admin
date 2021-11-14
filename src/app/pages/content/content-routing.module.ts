@@ -22,12 +22,20 @@ const routes: Routes = [{
       component: PageComponent,
     },
     {
+      path: 'pages/add/:code',
+      component: AddPageComponent,
+    },
+    {
       path: 'pages/add',
       component: AddPageComponent,
     },
     {
       path: 'boxes/list',
       component: BoxesComponent,
+    },
+    {
+      path: 'boxes/add/:code',
+      component: AddBoxComponent,
     },
     {
       path: 'boxes/add',

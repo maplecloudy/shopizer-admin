@@ -48,7 +48,7 @@ export class TaxClassListComponent implements OnInit {
     this.selectedStore = this.storageService.getMerchant()
   }
   getStoreList() {
-    this.storeService.getListOfMerchantStoreNames({ 'store': '123' })
+    this.storeService.getListOfMerchantStoreNames({ 'store': '' })
       .subscribe(res => {
 
         res.forEach((store) => {
@@ -201,7 +201,7 @@ export class TaxClassListComponent implements OnInit {
         }
       });
   }
-  createTaxClass(e) {
+  createTaxClass() {
     localStorage.setItem('classId', '');
     this.router.navigate(['pages/tax-management/classes-add']);
   }

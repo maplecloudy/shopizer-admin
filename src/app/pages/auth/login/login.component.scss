@@ -1,7 +1,11 @@
-* {
-    margin: 0px;
+@import "../../../@theme/styles/themes";
+
+.another-action {
+    margin-top: 2rem;
+
     padding: 0px;
     box-sizing: border-box;
+    width: 100%
 }
 
 body,
@@ -129,6 +133,13 @@ iframe {
 
 .txt3 {
     font-size: 13px;
+    color: #555555;
+    line-height: 1.4;
+}
+
+.txt4 {
+    font-size: 14px;
+    text-align: center;
     color: #555555;
     line-height: 1.4;
 }

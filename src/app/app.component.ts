@@ -11,7 +11,8 @@ import { ConfigService } from './pages/shared/services/config.service';
 
 @Component({
   selector: 'ngx-app',
-  template: '<div *ngIf="configService.languages.length!==0"><router-outlet></router-outlet></div>',
+  template: '<div><router-outlet></router-outlet></div>',
+  // template: '<div *ngIf="configService.languages.length!==0"><router-outlet></router-outlet></div>',
 })
 export class AppComponent implements OnInit {
 
@@ -19,7 +20,7 @@ export class AppComponent implements OnInit {
     private translate: TranslateService,
     public configService: ConfigService
   ) {
-    this.configService.getListOfSupportedLanguages1();
+    this.configService.getListOfSystemSupportedLanguages();
     if (!localStorage.getItem('lang')) {
       localStorage.setItem('lang', environment.client.language.default);
     }

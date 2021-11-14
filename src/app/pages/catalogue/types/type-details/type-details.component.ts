@@ -26,10 +26,17 @@ export class TypeDetailsComponent implements OnInit {
   type = {
     id: '',
     code: '',
+<<<<<<< HEAD
     //name: '',
     allowAddToCart: false,
     visible: '',
     description: { name: '', language: '' }
+=======
+    allowAddToCart: false,
+    visible: '',
+    description: { name: '', language: '' },
+    descriptions: []
+>>>>>>> main
   }
 
   constructor(
@@ -54,7 +61,8 @@ export class TypeDetailsComponent implements OnInit {
     if (typeId) {
       this.loading = true;
       let param = {
-        lang: this.storageService.getLanguage(),
+        //lang: this.storageService.getLanguage(),
+        lang: "_all",
         store: this.storageService.getMerchant()
       }
       this.typesService.getType(typeId, param)
@@ -64,10 +72,13 @@ export class TypeDetailsComponent implements OnInit {
 
           this.type.id = res.id;
           this.type.code = res.code;
-          //this.type.name = res.name;
           this.type.allowAddToCart = res.allowAddToCart;
           this.type.visible = res.visible;
           this.type.description = res.description;
+<<<<<<< HEAD
+=======
+          this.type.descriptions = res.descriptions;
+>>>>>>> main
 
           this.isReadonlyCode = true;
 
@@ -111,18 +122,26 @@ export class TypeDetailsComponent implements OnInit {
       visible: this.type.visible,
       code: this.type.code,
       selectedLanguage: 'en',
+<<<<<<< HEAD
       //name: this.type.name,
+=======
+>>>>>>> main
     });
 
     if (this.type.id) {
       this.form.controls['code'].disable();
     }
+<<<<<<< HEAD
     if (this.type.description) {
+=======
+    if (this.type.descriptions) {
+>>>>>>> main
       this.fillFormArray();
     }
   }
   fillFormArray() {
     this.form.value.descriptions.forEach((desc, index) => {
+<<<<<<< HEAD
       // console.log(desc)
       // console.log(this.selectedLanguage)
       // this.description.descriptions.forEach((description) => {
@@ -133,6 +152,18 @@ export class TypeDetailsComponent implements OnInit {
         });
       }
       // });
+=======
+      if (desc.language === this.selectedLanguage.value) {
+        this.type.descriptions.forEach((d, i) => {
+          if(d.language === this.selectedLanguage.value) {
+            (<FormArray>this.form.get('descriptions')).at(index).patchValue({
+              language: d.language,
+              name: d.name,
+            });
+          }
+        });
+      }
+>>>>>>> main
     });
   }
 
@@ -186,6 +217,16 @@ export class TypeDetailsComponent implements OnInit {
     return this.form.get('selectedLanguage');
   }
 
+<<<<<<< HEAD
+=======
+  selectLanguage(lang) {
+    this.form.patchValue({
+      selectedLanguage: lang,
+    });
+    //this.fillFormArray();
+  }
+
+>>>>>>> main
   get descriptions(): FormArray {
     return <FormArray>this.form.get('descriptions');
   }

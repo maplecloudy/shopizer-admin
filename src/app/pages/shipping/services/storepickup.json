@@ -10,12 +10,22 @@
         "value": false
     },
     {
+        "type": "checkbox",
+        "label": "Default",
+        "placeholder": "",
+        "name": "defaultSelected",
+        "objectKey": "",
+        "isRequired": false,
+        "optionData": [],
+        "value": false
+    },
+    {
         "type": "dropdown",
         "label": "Environment",
         "placeholder": "Please select environment",
         "name": "enviroment",
         "objectKey": "",
-        "isRequired": true,
+        "isRequired": false,
         "optionData": [
             {
                 "id": "test",

@@ -21,6 +21,9 @@ import { TreeTableModule } from 'primeng/treetable';
 import { ValidateNumberDirective } from './validation/validate-number.directive';
 // import { EqualValidator } from './validation/equal-validator';
 import { PasswordPromptComponent } from './components/password-prompt/password-prompt';
+import { FilePickerModule } from 'ngx-awesome-uploader';
+
+import { DragDropModule } from "@angular/cdk/drag-drop";
 
 
 @NgModule({
@@ -44,7 +47,9 @@ import { PasswordPromptComponent } from './components/password-prompt/password-p
     ThemeModule,
     NbSpinnerModule,
     TranslateModule,
-    TreeTableModule
+    TreeTableModule,
+    FilePickerModule,
+    DragDropModule
   ],
   exports: [
     Ng2SmartTableModule,
@@ -65,7 +70,7 @@ import { PasswordPromptComponent } from './components/password-prompt/password-p
     DropdownModule,
     AutoCompleteModule,
     MultiSelectModule,
-    ValidateNumberDirective,
+    ValidateNumberDirective
     // EqualValidator
   ],
   providers: [CurrencyPipe],

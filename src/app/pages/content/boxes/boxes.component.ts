@@ -48,7 +48,7 @@ export class BoxesComponent {
   loadParams() {
     return {
       store: this.storageService.getMerchant(),
-      lang: this.storageService.getLanguage(),
+      lang: '_all',
       count: this.perPage,
       page: 0
     };
@@ -64,7 +64,6 @@ export class BoxesComponent {
   }
 
   getBox() {
-    // let action = Action.CONTENT + Action.BOXES;
     this.params.page = this.currentPage - 1;
     this.crudService.get('/v1/private/content/boxes/', this.params)
       .subscribe(data => {
@@ -92,11 +91,7 @@ export class BoxesComponent {
           {
             name: 'delete',
             title: '<i class="nb-trash"></i>'
-          },
-          // {
-          //   name: 'delete',
-          //   title: '<i class="nb-info"></i>'
-          // }
+          }
         ]
       },
       columns: {
@@ -112,8 +107,13 @@ export class BoxesComponent {
           title: this.translate.instant('CONTENT.NAME'),
           type: 'string',
           valuePrepareFunction: (cell, row) => {
-            // console.log(row.description.name)
-            return row.description.name
+            // console.log(row.descriptions)
+            if (this.params.lang == '_all') {
+              return row.descriptions[0].name
+            } else {
+              let value = row.descriptions.find((a) => a.language == this.params.lang);
+              return value.name
+            }
           }
         }
       },
@@ -121,7 +121,6 @@ export class BoxesComponent {
 
   }
   addBoxes() {
-    localStorage.setItem('contentBoxID', '');
     this.router.navigate(['/pages/content/boxes/add']);
   }
   changePage(event) {
@@ -154,7 +153,6 @@ export class BoxesComponent {
     this.getBox();
   }
   onClickAction(event) {
-    console.log(event);
     switch (event.action) {
       case 'edit':
         this.onEdit(event);
@@ -164,13 +162,9 @@ export class BoxesComponent {
     }
   }
   onEdit(event) {
-    console.log(event)
-    localStorage.setItem('contentBoxID', event.data.code);
-    this.router.navigate(['/pages/content/boxes/add']);
+    this.router.navigate(['/pages/content/boxes/add/' + event.data.code]);
   }
   onDelete(event) {
-
-    // console.log(event);
 
     this.dialogService.open(ShowcaseDialogComponent, {
       context: 'Do you really want to remove this entity?'

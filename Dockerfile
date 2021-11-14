@@ -1,34 +1,27 @@
 # build env
-FROM node:13.12.0-alpine as builder
+FROM node:12.8.0 as builder
 
 WORKDIR /app
 
-# Copy project files to the docker image
+COPY package.json package-lock.json ./
+RUN npm install
 COPY . .
 
-# install angular/cli globally (latest version, change this to the version you are using)
-#same as package.json
-RUN npm install @angular/cli@9.0.4 -g
-
-# install packages
-RUN npm install
-
 # Build Angular Application in Production
-RUN ng build --prod
+RUN export NODE_OPTIONS=--max_old_space_size=8048
+RUN node ./node_modules/@angular/cli/bin/ng build --prod --progress
+RUN ls -al
 
 #### STAGE 2
 #### Deploying the application
 
 FROM nginx:alpine
 
-VOLUME  /var/cache/nginx
-
-# Copy the build files from the project
-# replace "angular-docker-environment-variables" with your angular project name
-COPY --from=builder /app/dist/angular-docker-environment-variables /usr/share/nginx/html
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Copy Nginx Files
-COPY --from=builder /app/.docker/.config/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/docker/nginx.conf /etc/nginx/conf.d/default.conf
 
 # EXPOSE Port 80
-EXPOSE 80
+# EXPOSE 80
+CMD ["/bin/sh",  "-c",  "envsubst < /usr/share/nginx/html/assets/env.template.js > /usr/share/nginx/html/assets/env.js && exec nginx -g 'daemon off;'"]

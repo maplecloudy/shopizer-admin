@@ -17,7 +17,7 @@ import { ToastrService } from 'ngx-toastr';
 export class RulesListComponent implements OnInit {
 
   source: LocalDataSource = new LocalDataSource();
-  loadingList = false;
+  loadingList: boolean = false;
   settings = {};
   perPage = 10;
   currentPage = 1;
@@ -33,9 +33,11 @@ export class RulesListComponent implements OnInit {
     private storeService: StoreService,
     private storageService: StorageService,
   ) {
-    this.getShippingRulesList();
+
     this.isSuperAdmin = this.storageService.getUserRoles().isSuperadmin;
-    this.selectedStore = this.storageService.getMerchant()
+    this.selectedStore = this.storageService.getMerchant();
+    // console.log(this.selectedStore)
+    this.getShippingRulesList();
   }
 
   ngOnInit() {
@@ -55,23 +57,27 @@ export class RulesListComponent implements OnInit {
   }
   getShippingRulesList() {
     this.loadingList = true;
+
     this.sharedService.getShippingRules(this.selectedStore)
       .subscribe(data => {
+        console.log(data);
         this.loadingList = false;
-        this.source.load(data);
+        this.source.load(data.rules);
       }, error => {
 
       });
+
+    this.loadingList = false;
     this.setSettings();
   }
 
   setSettings() {
     var me = this;
     this.settings = {
-
+      mode: 'external',
       hideSubHeader: true,
       actions: {
-        columnTitle: this.translate.instant('COMMON.ACTIONS'),
+        columnTitle: this.translate.instant('ORDER.ACTIONS'),
         add: false,
         edit: false,
         delete: false,
@@ -85,10 +91,7 @@ export class RulesListComponent implements OnInit {
             name: 'delete',
             title: '<i class="nb-trash"></i>'
           }
-        ],
-      },
-      pager: {
-        display: false
+        ]
       },
       columns: {
         id: {
@@ -106,9 +109,10 @@ export class RulesListComponent implements OnInit {
           type: 'string',
           filter: false
         }
-      },
 
+      },
     };
+
 
   }
   onSelectStore(e) {
@@ -118,48 +122,50 @@ export class RulesListComponent implements OnInit {
 
   }
   // paginator
-  // changePage(event) {
-  //   switch (event.action) {
-  //     case 'onPage': {
-  //       this.currentPage = event.data;
-  //       break;
-  //     }
-  //     case 'onPrev': {
-  //       this.currentPage--;
-  //       break;
-  //     }
-  //     case 'onNext': {
-  //       this.currentPage++;
-  //       break;
-  //     }
-  //     case 'onFirst': {
-  //       this.currentPage = 1;
-  //       break;
-  //     }
-  //     case 'onLast': {
-  //       this.currentPage = event.data;
-  //       break;
-  //     }
-  //   }
+  changePage(event) {
+    switch (event.action) {
+      case 'onPage': {
+        this.currentPage = event.data;
+        break;
+      }
+      case 'onPrev': {
+        this.currentPage--;
+        break;
+      }
+      case 'onNext': {
+        this.currentPage++;
+        break;
+      }
+      case 'onFirst': {
+        this.currentPage = 1;
+        break;
+      }
+      case 'onLast': {
+        this.currentPage = event.data;
+        break;
+      }
+    }
 
-  // }
-  // delete(e) {
-  //   this.loadingList = true;
-  //   this.sharedService.deletePackaging(e.data.code)
-  //     .subscribe(res => {
-  //       this.loadingList = false;
-  //       this.toastr.success("Packages has been deleted successfully");
-  //       this.getShippingRulesList()
-  //     }, error => {
-  //       this.loadingList = false;
+  }
+  delete(e) {
+    console.log(e)
+    this.loadingList = true;
+    this.sharedService.deleteRules(e.data.id)
+      .subscribe(res => {
+        this.loadingList = false;
+        this.toastr.success("Packages has been deleted successfully");
+        this.getShippingRulesList()
+      }, error => {
+        this.toastr.success("Packages has been deleted fail");
+        this.loadingList = false;
 
-  //     });
-  // }
+      });
+  }
   onClickAction(e) {
     if (e.action == 'delete') {
-      // this.delete(e);
+      this.delete(e);
     } if (e.action == 'edit') {
-      localStorage.setItem('rulesCode', e.data.code);
+      localStorage.setItem('rulesCode', e.data.id);
       this.router.navigate(['pages/shipping/rules/add']);
     }
   }

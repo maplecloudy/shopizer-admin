@@ -10,7 +10,9 @@ import { OptionsComponent } from './options.component';
 import { OptionValueImageComponent } from './option-value-image/option-value-image.component';
 import { OptionsSetListComponent } from './options-set-list/options-set-list.component';
 import { OptionSetComponent } from './options-set/option-set.component';
-import { CustomModule } from '../../custome-component/custom.module';
+import { CustomModule } from '../../custom-component/custom.module';
+import { VariationsListComponent } from './variations/variations.component';
+import { AddVariationsComponent } from './variations/add-variations.component';
 @NgModule({
   declarations: [
     OptionsComponent,
@@ -20,7 +22,9 @@ import { CustomModule } from '../../custome-component/custom.module';
     OptionsValuesListComponent,
     OptionValueImageComponent,
     OptionsSetListComponent,
-    OptionSetComponent
+    OptionSetComponent,
+    VariationsListComponent,
+    AddVariationsComponent
   ],
   imports: [
     OptionsRoutingModule,

@@ -1,12 +1,15 @@
-import { Component } from '@angular/core';
-import { LocalDataSource } from 'ng2-smart-table';
+import { Component, OnInit } from '@angular/core';
+import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CrudService } from '../../shared/services/crud.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { ConfigService } from '../../shared/services/config.service';
 import { ImageBrowserComponent } from '../../../@theme/components/image-browser/image-browser.component';
-// import { environment } from '../../../';
 import { NbDialogService } from '@nebular/theme';
+import { validators } from '../../shared/validation/validators';
+import { slugify } from '../../shared/utils/slugifying';
+
+import { TranslateService } from '@ngx-translate/core';
 declare var jquery: any;
 declare var $: any;
 
@@ -15,22 +18,31 @@ declare var $: any;
   templateUrl: './add-page.component.html',
   styleUrls: ['./add-page.component.scss'],
 })
-export class AddPageComponent {
-  loadingList = false;
-  visible: any = false;
-  descData: any;
-  updatedID: any;
-  mainmenu: any = false;
-  code: string = '';
-  order: number = 0;
-  buttonText: string = 'Save';
-  // titleText: string = 'Add page details';
-  language: string = 'en';
-  description: Array<any> = []
-  languages: Array<any> = [];
-  codeExits: any;
-  message: string = '';
+export class AddPageComponent implements OnInit {
 
+  loader = false;
+  uniqueCode: string;//identifier fromroute
+  form: FormGroup;
+  content: any;
+
+  loadingList = false;
+  // visible: any = false;
+  // descData: any;
+  // updatedID: any;
+  // mainmenu: any = false;
+  // code: string = '';
+  // order: number = 0;
+  action: string = 'save';
+  // language: string = 'en';
+  // description: Array<any> = []
+  languages = [];
+
+  defaultLanguage = localStorage.getItem('lang');
+  //changed from seo section
+  currentLanguage = localStorage.getItem('lang');
+
+  isCodeExists = false;
+  message: string = '';
   public scrollbarOptions = { axis: 'y', theme: 'minimal-dark' };
 
 
@@ -39,14 +51,15 @@ export class AddPageComponent {
     tabsize: 2,
     height: 300,
     toolbar: [
-      ['misc', ['codeview', 'undo', 'redo']],
+      ['misc', ['codeview', 'fullscreen', 'undo', 'redo']],
       ['style', ['bold', 'italic', 'underline', 'clear']],
       ['font', ['bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript', 'clear']],
       ['fontsize', ['fontname', 'fontsize', 'color']],
-      ['para', ['style', 'ul', 'ol', 'paragraph', 'height']],
-      ['insert', ['table', 'picture', 'link', 'video']],
+      ['para', ['style', 'ul', 'ol', 'height']],
+      ['insert', ['table', 'link', 'video']],
       ['customButtons', ['testBtn']]
     ],
+
     buttons: {
       'testBtn': this.customButton.bind(this)
     },
@@ -57,123 +70,201 @@ export class AddPageComponent {
     public router: Router,
     private toastr: ToastrService,
     private configService: ConfigService,
-    private dialogService: NbDialogService
+    private dialogService: NbDialogService,
+    private activatedRoute: ActivatedRoute,
+    private fb: FormBuilder,
+    private translate: TranslateService
   ) {
-    this.configService.getListOfSupportedLanguages(localStorage.getItem('merchant'))
-      .subscribe(res => {
-        console.log(res);
-        this.languages = res;
-        this.languages.forEach(lang => {
-          this.description.push({
-            language: lang.code,
-            name: '',
-            description: '',
-            path: '',
-            friendlyUrl: '',
-            title: '',
-            metaDescription: '',
-            keyWords: '',
-            // highlights: ''
-          });
-        });
-      });
-    if (localStorage.getItem('contentpageid')) {
-      this.buttonText = 'Update';
-      // this.titleText = 'Update page details';
-      this.getContentDetails()
-    }
 
   }
-  getContentDetails() {
-    // console.log(this.language)
-    this.crudService.get('/v1/content/pages/' + localStorage.getItem('contentpageid') + '?lang=_all')
-      .subscribe(data => {
-        // console.log(data, '************')
-        // this.en = data;
-        this.updatedID = data.id;
-        this.visible = data.visible;
-        this.mainmenu = data.displayedInMenu;
-        this.code = data.code;
-        this.order = 0;
-        this.descData = data.descriptions
-        this.fillForm()
 
-      }, error => {
-      });
-  }
-  fillForm() {
-    this.descData.forEach((newvalue, index) => {
-      this.description.forEach((value, index) => {
-        if (newvalue.language == value.language) {
-          value.name = newvalue.name
-          value.friendlyUrl = newvalue.friendlyUrl
-          value.title = newvalue.title
-          value.description = newvalue.description
-          value.metaDescription = newvalue.metaDescription
-          value.keyWords = newvalue.keyWords
-          // value.highlights = newvalue.highlights
+  ngOnInit() {
+    this.loader = true;
+    this.uniqueCode = this.activatedRoute.snapshot.paramMap.get('code');
+    this.createForm();
+
+    const languages = this.configService.getListOfSupportedLanguages(localStorage.getItem('merchant'))
+      .subscribe((languages) => {
+        this.languages = [...languages];
+        this.addFormArray();//create array
+        if (this.uniqueCode != null) {
+          this.action = 'edit';
+          this.getPage();
+        } else {
+          this.loader = false;
         }
-      });
 
-    })
-    // console.log(this.description);
-  }
-  focusOutFunction() {
-    this.crudService.get('/v1/content/' + this.code)
-      .subscribe(data => {
-        this.codeExits = true;
-        this.message = "This code already exist"
       }, error => {
-        this.codeExits = false;
-        this.message = "This code is available"
+        this.toastr.error(error.error.message);
+        this.loader = false;
       });
   }
-  urlTitle(event, lang) {
-    let text = event.target.value;
-    var characters = [' ', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '+', '=', '_', '{', '}', '[', ']', '|', '/', '<', '>', ',', '.', '?', '--'];
 
-    for (var i = 0; i < characters.length; i++) {
-      var char = String(characters[i]);
-      text = text.replace(new RegExp("\\" + char, "g"), '-');
-    }
-    text = text.toLowerCase();
-    this.description.forEach((value, index) => {
-      if (lang == value.language) {
-        value.friendlyUrl = text
+  private getPage() {
+    this.crudService.get('/v1/content/pages/' + this.uniqueCode + '?lang=_all')
+      .subscribe(data => {
+        // this.updatedID = data.id;
+        this.content = data;
+        this.fillForm();
+        this.loader = false;
+
+      }, error => {
+      });
+  }
+
+
+
+  private createForm() {
+    this.form = this.fb.group({
+      id: [''],
+      code: ['', [Validators.required, Validators.pattern(validators.alphanumeric)]],
+      visible: [false],
+      mainmenu: [false],
+      order: [0],
+      selectedLanguage: [this.defaultLanguage, [Validators.required]],
+      descriptions: this.fb.array([]),
+    });
+  }
+
+  addFormArray() {
+    const control = <FormArray>this.form.controls.descriptions;
+    this.languages.forEach(lang => {
+      control.push(
+        this.fb.group({
+          language: [lang.code, [Validators.required]],
+          description: [''],
+          title: [''],
+          metaDescription: [''],
+          name: ['', [Validators.required]],
+          friendlyUrl: ['', [Validators.required]]
+        })
+      );
+    });
+  }
+
+  private fillForm() {
+    this.form.patchValue({
+      id: this.content.id,
+      code: this.content.code,
+      visible: this.content.visible,
+      mainmenu: this.content.mainmenu,
+      selectedLanguage: this.defaultLanguage,
+      descriptions: [],
+    });
+    this.fillFormArray();
+    this.findInvalidControls();
+
+  }
+
+  fillFormArray() {
+    this.form.value.descriptions.forEach((desc, index) => {
+      if (this.content != null && this.content.descriptions) {
+        this.content.descriptions.forEach((description) => {
+          if (desc.language === description.language) {
+            (<FormArray>this.form.get('descriptions')).at(index).patchValue({
+              language: description.language,
+              name: description.name,
+              friendlyUrl: description.friendlyUrl,
+              description: description.description,
+              title: description.title,
+              metaDescription: description.metaDescription,
+            });
+          }
+        });
       }
     });
-    // this.en.slug = text;
+  }
+
+  public findInvalidControls() {
+    const invalid = [];
+    console.log(this.form.controls)
+    const controls = this.form.controls;
+    for (const name in controls) {
+      // console.log(name)
+      // console.log(controls[name])
+      if (controls[name].invalid) {
+        invalid.push(name);
+      }
+    }
+    console.log(invalid)
+    if (invalid.length > 0) {
+      this.toastr.error(this.translate.instant('COMMON.FILL_REQUIRED_FIELDS'));
+    }
+    return invalid;
+  }
+  selectLanguage(lang) {
+    this.form.patchValue({
+      selectedLanguage: lang,
+    });
+    this.currentLanguage = lang;
+    this.fillFormArray();
+  }
+
+  get code() {
+    return this.form.get('code');
+  }
+
+  get descriptions(): FormArray {
+    return <FormArray>this.form.get('descriptions');
+  }
+
+  get selectedLanguage() {
+    return this.form.get('selectedLanguage');
+  }
+
+  focusOutFunction(event) {
+    console.log(event)
+    const code = event.target.value.trim();
+    this.crudService.get('/v1/private/content/page/' + code + '/exists')
+      .subscribe(res => {
+        this.isCodeExists = res.exists;
+      });
+  }
+  urlTitle(event, index) {
+    (<FormArray>this.form.get('descriptions')).at(index).patchValue({
+      friendlyUrl: slugify(event)
+    });
   }
 
   createPages() {
-    this.loadingList = true;
-    let param = {
-      "code": this.code,
-      // "contentType": "PAGE",
-      "descriptions": this.description,
-      "linkToMenu": this.mainmenu,
-      "visible": this.visible
+    this.form.markAllAsTouched();
+    if (this.findInvalidControls().length > 0) {
+      return;
     }
+<<<<<<< HEAD
     if (localStorage.getItem('contentpageid')) {
       this.crudService.put('/v1/private/content/page/' + this.updatedID, param)
+=======
+
+    // this.loadingList = true;
+
+    //manouver resulting object
+    var object = this.form.value;
+
+    //remove un necessary
+    delete object.selectedLanguage;
+
+
+    console.log(object)
+
+
+
+    if (object.id) {
+      this.crudService.put('/v1/private/content/page/' + object.id, object)
+>>>>>>> main
         .subscribe(data => {
-          console.log(data);
           this.loadingList = false;
           this.toastr.success('Page updated successfully');
-          // this.buttonText = 'Update';
-          // this.titleText = 'Update page details';
-          // // this.getContentDetails();
           this.router.navigate(['/pages/content/pages/list']);
         }, error => {
           this.loadingList = false;
         });
     } else {
-      this.crudService.post('/v1/private/content/page', param)
+      this.crudService.post('/v1/private/content/page', object)
         .subscribe(data => {
           console.log(data);
           this.loadingList = false;
           this.toastr.success('Page added successfully');
-          // this.getContentDetails();
           this.router.navigate(['/pages/content/pages/list']);
         }, error => {
           this.loadingList = false;
@@ -181,6 +272,10 @@ export class AddPageComponent {
     }
 
   }
+
+
+
+
   goToback() {
     this.router.navigate(['/pages/content/pages/list']);
   }

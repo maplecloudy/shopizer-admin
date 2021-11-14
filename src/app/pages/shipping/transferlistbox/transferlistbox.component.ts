@@ -1,13 +1,10 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { stringify } from '@angular/compiler/src/util';
-// import { CrudService } from '../../shared/services/crud.service';
 import { ToastrService } from 'ngx-toastr';
 import { TranslateService } from '@ngx-translate/core';
 import { StorageService } from '../../shared/services/storage.service';
 import { SharedService } from '../services/shared.service';
 import { Subscription } from 'rxjs';
-
-
 
 
 @Component({
